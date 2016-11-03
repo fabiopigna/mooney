@@ -1,3 +1,14 @@
 <h1>
-  {{title}}
+	{{title}}
 </h1>
+<md-card>
+	<button md-raised-button color="primary" (click)="load()">load</button>
+</md-card>
+
+
+<div *ngIf="ecoDoc">
+	<prova [ecoDoc]="ecoDoc"></prova>
+	<div>total:{{ecoDoc.total}}</div>
+	<div>count:{{ecoDoc.count}}</div>
+	<div *ngFor="let movement of ecoDoc.movements">{{movement}}</div>
+</div>
