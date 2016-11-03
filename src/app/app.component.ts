@@ -1,6 +1,6 @@
 import { EcoDoc, EcoDocParser } from './ecodoc/EcoDocParser';
 import { Observable } from 'rxjs/Rx';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Http, Response } from '@angular/http';
 
 @Component({
@@ -8,13 +8,15 @@ import { Http, Response } from '@angular/http';
   templateUrl: './app.component.html',
   styleUrls: ['app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Mooney';
   ecoDoc: EcoDoc;
 
   constructor(private http: Http) {
+    this.ecoDoc = this.getEmptyEcoDoc();
   }
-  public load() {
+
+  ngOnInit(): void {
     this.http.get('app/F1040EZ.json')
       .map(this.extractData)
       .catch(this.handleError)
@@ -30,6 +32,7 @@ export class AppComponent {
     let body = res.json();
     return body;
   }
+
   private handleError(error: Response | any) {
     // In a real world app, we might use a remote logging infrastructure
     let errMsg: string;
@@ -44,4 +47,13 @@ export class AppComponent {
     return Observable.throw(errMsg);
   }
 
+  private getEmptyEcoDoc(): EcoDoc {
+    return {
+      movements: [],
+      count: 0,
+      total: 0,
+      entries: [],
+      saldoIniziale: 0
+    };
+  }
 }

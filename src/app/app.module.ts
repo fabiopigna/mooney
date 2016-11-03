@@ -6,11 +6,15 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, JsonpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
+import { MovementsComponent } from './movements/movements.component';
+import { PieChartComponent } from './chart/pie/pie-chart.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ChartComponent
+    ChartComponent,
+    PieChartComponent,
+    MovementsComponent
   ],
   imports: [
 

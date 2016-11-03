@@ -17,12 +17,12 @@ export class EcoEntry {
     }
 
     appendDescription(row: EcoRow): void {
-        this.descrizione += row.getCell(EcoHeadersX.Descrizione);
+        this.descrizione += ' ' + row.getCell(EcoHeadersX.Descrizione);
     }
 
     print(): string {
         return '' + this.data.toLocaleDateString() + ' --- ' +
-            this.valuta + ' --- ' +
+            this.valuta.toLocaleDateString() + ' --- ' +
             this.movAvere + ' --- ' +
             this.movDare + ' --- ' +
             this.descrizione + '';
