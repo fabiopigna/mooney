@@ -1,4 +1,4 @@
-import { collectAndResolveStyles } from '@angular/compiler/src/private_import_core';
+import { EcoCategory } from '../ecodoc/category/EcoCategory';
 import { Component, Input, OnChanges, ViewEncapsulation } from '@angular/core';
 import { EcoDoc } from '../ecodoc/EcoDocParser';
 @Component({
@@ -30,10 +30,18 @@ export class MovementsComponent implements OnChanges {
             tiles.push(new GridTile('lightpink', entry.movDare !== 0 ? entry.movDare.toFixed(2) : ''));
             tiles.push(new GridTile('lightgreen', entry.movAvere !== 0 ? entry.movAvere.toFixed(2) : ''));
             tiles.push(new GridTile('lightgray', entry.descrizione, 5));
+            tiles.push(new GridTile('lightsalmon', this.categoryToString(entry.category), 2));
             return tiles;
 
         }, []);
         return gridData;
+    }
+
+    categoryToString(category: EcoCategory): string {
+        if (category && !category.isEmpty()) {
+            return category.name + ' ' + this.categoryToString(category.child);
+        }
+        return '';
     }
 }
 

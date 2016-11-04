@@ -11,7 +11,12 @@ export class EcoCell {
     constructor(ecoText: TextsJson, ecoHeaders: EcoHeaders) {
         this.x = ecoText.x;
         this.y = ecoText.y;
-        this.text = ecoText.R[0].T
+        let regex = /%20%20/g;
+        let noSpace = ecoText.R[0].T;
+        while (regex.test(noSpace)) {
+            noSpace = noSpace.replace(regex, '%20');
+        }
+        this.text = noSpace
             .replace(/%20/g, ' ')
             .replace(/%3E/g, '>')
             .replace(/%3C/g, '<')

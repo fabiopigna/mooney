@@ -1,21 +1,27 @@
+import { TEcoDocResponse } from './TEcoDocResponse';
 import { EcoCell } from './EcoCell';
 import { EcoHeadersX } from './EcoHeadersX';
 import { EcoHeaders } from './EcoHeaders';
 import { EcoRow } from './EcoRow';
 import { EcoEntry } from './EcoEntry';
 
+
 export class EcoDocParser {
 
-    public parse(json): EcoDoc {
+    public parse(responses: TEcoDocResponse[]): EcoDoc {
         let ecoHeaders = new EcoHeaders();
-        let pages: PageJson[] = json.formImage.Pages;
+
         let ecoTable: EcoTable = new EcoTable();
-        pages.forEach(page => {
-            let ecoPage = new EcoPage(ecoHeaders);
-            for (let i = 0; i < page.Texts.length; i++) {
-                ecoPage.addEcoText(page.Texts[i]);
-            }
-            ecoTable.addPage(ecoPage);
+
+        responses.forEach(response => {
+            let pages: PageJson[] = response.json.formImage.Pages;
+            pages.forEach(page => {
+                let ecoPage = new EcoPage(ecoHeaders);
+                for (let i = 0; i < page.Texts.length; i++) {
+                    ecoPage.addEcoText(page.Texts[i]);
+                }
+                ecoTable.addPage(ecoPage);
+            });
         });
         let entries = ecoTable.mergeRows();
         let saldoIniziale = ecoTable.getSaldoIniziale();
@@ -23,6 +29,7 @@ export class EcoDocParser {
 
         // return ecoTable.print();
     }
+
 }
 
 
@@ -104,7 +111,7 @@ export class EcoTable {
                 && !nextRow.hasCell(EcoHeadersX.Data)
                 && !nextRow.hasCell(EcoHeadersX.Valuta)
             ) {
-                prevEntry.appendDescription(nextRow);
+                prevEntry.addDescription(nextRow);
                 return prevEntry;
             } else if (nextRow.hasCell(EcoHeadersX.Data)
                 && nextRow.hasCell(EcoHeadersX.Valuta)

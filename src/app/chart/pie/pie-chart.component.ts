@@ -1,7 +1,15 @@
 import { EcoDoc } from '../../ecodoc/EcoDocParser';
-import { EcoEntry } from '../../ecodoc/EcoEntry';
-import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
+    Output,
+    ViewEncapsulation
+} from '@angular/core';
 import * as d3 from 'd3';
+import { EcoCategory } from '../../ecodoc/category/EcoCategory';
 
 @Component({
     selector: 'pie-chart',
@@ -13,8 +21,14 @@ export class PieChartComponent implements OnChanges {
 
     @Input()
     ecoDoc: EcoDoc;
+    @Output()
+    selected: EventEmitter<EcoChartEntry>;
 
-    constructor(private el: ElementRef) { }
+    entry: EcoChartEntry;
+
+    constructor(private el: ElementRef) {
+        this.selected = new EventEmitter<EcoChartEntry>();
+    }
 
     ngOnChanges(): void {
         let chartData = this.handleData(this.ecoDoc);
@@ -22,67 +36,110 @@ export class PieChartComponent implements OnChanges {
     }
 
     handleData(ecoDoc: EcoDoc): EcoChartEntry[] {
-        let progressive = ecoDoc.saldoIniziale;
-        return ecoDoc.entries.map((entry) => {
+        return ecoDoc.entries.reduce((result, entry) => {
+            if (!result.hasEntryByCategory(entry.category)) {
+                result.newEntryByCategory(entry.category);
+            }
+            let chartCategoryEntry = result.getEntryByCategory(entry.category);
             let chartEntry = new EcoChartEntry();
-            chartEntry.date = entry.data;
-            chartEntry.value = Math.abs(entry.movDare);
             chartEntry.label = entry.descrizione;
-            return chartEntry;
-        });
+            chartEntry.valueString = entry.movDare.toFixed(2);
+
+            chartCategoryEntry.entries.push(chartEntry);
+            chartCategoryEntry.value += Math.abs(entry.movDare);
+            chartCategoryEntry.valueString = chartCategoryEntry.value.toFixed(2);
+            return result;
+
+        }, new EcoCategoryContainer()).entries;
 
     }
 
 
     pieChart(chartEntries: EcoChartEntry[]): void {
 
-        let width = 360;
-        let height = 360;
-        let radius = Math.min(width, height) / 2;
         let color = d3.scaleOrdinal(d3.schemeCategory20b);
+        let width = 400,
+            height = 400,
+            radius = Math.min(width, height) / 2.5;
+        let labelr = radius + 20;
+
         let svg = d3.select("#pie-chart")
-            .attr('width', width)
-            .attr('height', height)
-            .append('g')
-            .attr('transform', 'translate(' + (width / 2) +
-            ',' + (height / 2) + ')');
+            .attr("width", '100%')
+            .attr("height", '100%')
+            .attr('viewBox', '0 0 ' + Math.min(width, height) + ' ' + Math.min(width, height))
+            .attr('preserveAspectRatio', 'xMinYMin')
+            .append("g")
+            .attr("transform", "translate(" + Math.min(width, height) / 2 + "," + Math.min(width, height) / 2 + ")");
+
         let arc = d3.arc<d3.PieArcDatum<EcoChartEntry>>()
-            .innerRadius(0)
-            .outerRadius(radius);
-        let labelArc = d3.arc<d3.PieArcDatum<EcoChartEntry>>()
-            .outerRadius(radius - 40)
-            .innerRadius(radius - 40);
+            .innerRadius(radius - 100)
+            .outerRadius(radius - 10);
         let pie = d3.pie<EcoChartEntry>()
             .value((d) => d.value)
-            .sort(null);
+            .sort((d0, d1) => d0.label.localeCompare(d1.label));
         let block = svg.selectAll('path')
             .data(pie(chartEntries))
-            .enter();
+            .enter()
+            .append("g")
+            .attr("class", "arc");
         block.append('path')
             .attr('d', arc)
-            .attr('fill', (d) => color(d.data.label))
+            .attr('fill', (d) => color(d.data.color))
             .on("mouseover", (d) => {
-                svg.append("text")
-                    .attr("dy", ".5em")
-                    .style("text-anchor", "middle")
-                    .style("font-size", 45)
-                    .attr("class", "label")
-                    .style("fill", function (d, i) { return "black"; })
-                    .text(d.data.label);
-
+                this.selected.emit(d.data);
+                this.entry = d.data;
             })
-            .on("mouseout", function (d) {
-                svg.select(".label").remove();
+            .on("mouseout", (d) => {
+
             });
-        // block.append("text")
-        //     .attr("transform", (d) => "translate(" + labelArc.centroid(d) + ")")
-        //     .attr("dy", ".35em")
-        //     .text((d) => d.data.value);
+        block.append("text")
+            .attr("transform", (d) => {
+                let c = arc.centroid(d),
+                    x = c[0],
+                    y = c[1],
+                    // pythagorean theorem for hypotenuse
+                    h = Math.sqrt(x * x + y * y);
+                return "translate(" + (x / h * labelr) + ',' +
+                    (y / h * labelr) + ")";
+            })
+            .attr("dy", ".35em")
+            .attr("text-anchor", (d) => {
+                // are we past the center?
+                return (d.endAngle + d.startAngle) / 2 > Math.PI ?
+                    "end" : "start";
+            })
+            .text((d) => d.data.label);
+
+    }
+}
+
+export class EcoCategoryContainer {
+
+    entries: EcoChartEntry[];
+
+    constructor() {
+        this.entries = [];
+    }
+    newEntryByCategory(category: EcoCategory): void {
+        let entry = new EcoChartEntry();
+        entry.value = 0;
+        entry.label = category.getName(2);
+        entry.color = category.getName(1);
+        this.entries.push(entry);
+    }
+    getEntryByCategory(category: EcoCategory): EcoChartEntry {
+        return this.entries.find(entry => entry.label === category.getName(2));
+
+    }
+    hasEntryByCategory(category: EcoCategory): boolean {
+        return this.entries.some(entry => entry.label === category.getName(2));
     }
 }
 
 export class EcoChartEntry {
-    date: Date;
+    entries: EcoChartEntry[] = [];
     value: number;
+    color: string;
     label: string;
+    valueString: string;
 }

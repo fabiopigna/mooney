@@ -1,1 +1,20 @@
-<svg width="960" height="500" id="pie-chart"></svg>
+<!--<div style="width:600px;height:600px; margin:1em;">
+	<svg id="pie-chart"></svg>
+</div>-->
+
+<md-grid-list cols="2">
+	<md-grid-tile>
+		<svg id="pie-chart"></svg>
+	</md-grid-tile>
+	<md-grid-tile>
+		<div *ngIf="entry">
+			<div>{{entry.label}}</div>
+			<div>{{entry.valueString}}</div>
+
+			<div>
+				entries:
+				<div *ngFor="let item of entry.entries">{{item.label}} : {{item.valueString}}</div>
+			</div>
+		</div>
+	</md-grid-tile>
+</md-grid-list>
