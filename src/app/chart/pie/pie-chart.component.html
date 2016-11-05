@@ -1,17 +1,13 @@
-<!--<div style="width:600px;height:600px; margin:1em;">
-	<svg id="pie-chart"></svg>
-</div>-->
-
 <md-grid-list cols="2">
 	<md-grid-tile>
 		<svg id="pie-chart"></svg>
 	</md-grid-tile>
 	<md-grid-tile>
-		<div *ngIf="entry">
+		<div *ngIf="entry" style="height:100%;">
 			<div>{{entry.label}}</div>
 			<div>{{entry.valueString}}</div>
 
-			<div>
+			<div style="overflow-y:auto; height:100%;">
 				entries:
 				<div *ngFor="let item of entry.entries">{{item.label}} : {{item.valueString}}</div>
 			</div>

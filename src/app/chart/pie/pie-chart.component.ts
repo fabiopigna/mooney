@@ -1,15 +1,12 @@
+import { Subscription } from 'rxjs/Rx';
+
 import { EcoDoc } from '../../ecodoc/EcoDocParser';
-import {
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnChanges,
-    Output,
-    ViewEncapsulation
-} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import * as d3 from 'd3';
 import { EcoCategory } from '../../ecodoc/category/EcoCategory';
+import { EcoDocService } from '../../eco-doc.service';
+import { OnChanges } from '@angular/core';
+
 
 @Component({
     selector: 'pie-chart',
@@ -17,21 +14,29 @@ import { EcoCategory } from '../../ecodoc/category/EcoCategory';
     styleUrls: ['./pie-chart.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-export class PieChartComponent implements OnChanges {
+export class PieChartComponent implements OnInit, OnDestroy {
 
-    @Input()
-    ecoDoc: EcoDoc;
     @Output()
     selected: EventEmitter<EcoChartEntry>;
-
     entry: EcoChartEntry;
+    subscription: Subscription;
 
-    constructor(private el: ElementRef) {
+    constructor(private ecoDocService: EcoDocService) {
         this.selected = new EventEmitter<EcoChartEntry>();
+
     }
 
-    ngOnChanges(): void {
-        let chartData = this.handleData(this.ecoDoc);
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
+    }
+
+    ngOnInit(): void {
+        this.subscription = this.ecoDocService.onEcoDocParsed((ecoDoc) => this.loadData(ecoDoc));
+        this.loadData(this.ecoDocService.getEcoDocParsed());
+    }
+
+    loadData(ecoDoc: EcoDoc): void {
+        let chartData = this.handleData(ecoDoc);
         this.pieChart(chartData);
     }
 
@@ -124,7 +129,7 @@ export class EcoCategoryContainer {
         let entry = new EcoChartEntry();
         entry.value = 0;
         entry.label = category.getName(2);
-        entry.color = category.getName(1);
+        entry.color = category.getName(2);
         this.entries.push(entry);
     }
     getEntryByCategory(category: EcoCategory): EcoChartEntry {

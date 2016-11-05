@@ -4,15 +4,16 @@ import { Component, OnChanges, OnDestroy, OnInit, ViewEncapsulation } from '@ang
 import { EcoDoc } from '../ecodoc/EcoDocParser';
 import { Subscription } from 'rxjs/Rx';
 @Component({
-    selector: 'movements-list',
-    templateUrl: './movements.component.html',
-    styleUrls: ['./movements.component.css'],
+    selector: 'categorize-movements-list',
+    templateUrl: './categorize-movements.component.html',
+    styleUrls: ['categorize-movements.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-export class MovementsComponent implements OnInit, OnDestroy {
+export class CategorizeMovementsComponent implements OnInit, OnDestroy {
 
+
+    private subscription: Subscription;
     public gridData: GridData = { columns: 0, tiles: [] };
-    subscription: Subscription;
 
     constructor(private ecoDocService: EcoDocService) {
     }
@@ -33,15 +34,17 @@ export class MovementsComponent implements OnInit, OnDestroy {
     private handleData(ecoDoc: EcoDoc): GridData {
         let gridData = new GridData();
 
-        gridData.tiles = ecoDoc.entries.reduce((tiles, entry) => {
-            tiles.push(new GridTile('lightblue', entry.data.toLocaleDateString()));
-            tiles.push(new GridTile('lightpink', entry.movDare !== 0 ? entry.movDare.toFixed(2) : ''));
-            tiles.push(new GridTile('lightgreen', entry.movAvere !== 0 ? entry.movAvere.toFixed(2) : ''));
-            tiles.push(new GridTile('lightgray', entry.descrizione, 5));
-            tiles.push(new GridTile('lightsalmon', this.categoryToString(entry.category), 2));
-            return tiles;
+        gridData.tiles = ecoDoc.entries
+            .filter((entry) => entry.category.isEmpty())
+            .reduce((tiles, entry) => {
+                tiles.push(new GridTile('lightblue', entry.data.toLocaleDateString()));
+                tiles.push(new GridTile('lightpink', entry.movDare !== 0 ? entry.movDare.toFixed(2) : ''));
+                tiles.push(new GridTile('lightgreen', entry.movAvere !== 0 ? entry.movAvere.toFixed(2) : ''));
+                tiles.push(new GridTile('lightgray', entry.descrizione, 5));
+                tiles.push(new GridTile('lightsalmon', this.categoryToString(entry.category), 2));
+                return tiles;
 
-        }, []);
+            }, []);
         return gridData;
     }
 

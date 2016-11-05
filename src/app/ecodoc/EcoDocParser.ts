@@ -26,8 +26,6 @@ export class EcoDocParser {
         let entries = ecoTable.mergeRows();
         let saldoIniziale = ecoTable.getSaldoIniziale();
         return new EcoDoc(saldoIniziale, entries);
-
-        // return ecoTable.print();
     }
 
 }
@@ -105,7 +103,7 @@ export class EcoTable {
     }
     mergeRows(): EcoEntry[] {
         let rows = this.getRows();
-        let entries = [];
+        let entries: EcoEntry[] = [];
         rows.reduce((prevEntry: EcoEntry, nextRow: EcoRow) => {
             if (nextRow.hasCell(EcoHeadersX.Descrizione)
                 && !nextRow.hasCell(EcoHeadersX.Data)
@@ -123,7 +121,7 @@ export class EcoTable {
             return prevEntry;
 
         }, null);
-        return entries;
+        return entries.sort((e0, e1) => e0.data.getTime() - e1.data.getTime());
     }
 
     getSaldoIniziale(): number {

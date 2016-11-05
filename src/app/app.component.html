@@ -15,8 +15,15 @@
 					Charts
 				</template>
 				<template md-tab-content>
-					<pie-chart [ecoDoc]="ecoDoc" style="width:100%"></pie-chart>
-					<line-chart [ecoDoc]="ecoDoc"style="width:100%"></line-chart>
+					<pie-chart style="width:100%"></pie-chart>
+				</template>
+			</md-tab>
+			<md-tab>
+				<template md-tab-label>
+					Line
+				</template>
+				<template md-tab-content>
+					<line-chart style="width:100%"></line-chart>
 				</template>
 			</md-tab>
 			<md-tab>
@@ -24,13 +31,20 @@
 					Movements
 				</template>
 				<template md-tab-content>
-					<!--<h1>Movements list</h1>
-					<div>total:{{ecoDoc.total}}</div>
-					<div>count:{{ecoDoc.count}}</div>
-					<div *ngFor="let movement of ecoDoc.movements">{{movement}}</div>-->
-					<movements-list [ecoDoc]="ecoDoc"></movements-list>
+					<movements-list></movements-list>
 				</template>
 			</md-tab>
+			<md-tab>
+				<template md-tab-label>
+					To Categorize
+				</template>
+				<template md-tab-content>
+					<categorize-movements-list></categorize-movements-list>
+				</template>
+			</md-tab>
+
+
+
 		</md-tab-group>
 	</md-card>
 </div>

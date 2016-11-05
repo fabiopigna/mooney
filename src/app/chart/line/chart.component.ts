@@ -1,27 +1,36 @@
-import { EcoDoc } from '../ecodoc/EcoDocParser';
-import { EcoEntry } from '../ecodoc/EcoEntry';
-import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core';
+import { Subscription } from 'rxjs/Rx';
+import { EcoDoc } from '../../ecodoc/EcoDocParser';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import * as d3 from 'd3';
+import { EcoDocService } from '../../eco-doc.service';
 
 @Component({
     selector: 'line-chart',
     templateUrl: './chart.component.html',
-    styleUrls: ['./chart.component.css'],
+    styleUrls: ['chart.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-export class ChartComponent implements OnChanges {
-    // styles: ['.axis--x path {  display: none;}',
-    //         '.line {  fill: none;  stroke: steelblue;  stroke-width: 1.5px;}']
-    @Input()
-    ecoDoc: EcoDoc;
+export class ChartComponent implements OnInit, OnDestroy {
 
-    constructor(private el: ElementRef) { }
+    subscription: Subscription;
 
-    ngOnChanges(): void {
+    constructor(private ecoDocService: EcoDocService) {
+    }
 
-        let chartData = this.handleData(this.ecoDoc);
-        // this.barChar(chartData)
-        this.lineChart(chartData);
+    ngOnInit(): void {
+        this.subscription = this.ecoDocService.onEcoDocParsed((ecoDoc) => this.loadData(ecoDoc));
+        this.loadData(this.ecoDocService.getEcoDocParsed());
+    }
+
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
+    }
+
+    loadData(ecoDoc: EcoDoc): void {
+        let chartData = this.handleData(ecoDoc);
+        if (chartData.length !== 0) {
+            this.lineChart(chartData);
+        }
     }
 
     handleData(ecoDoc: EcoDoc): EcoChartEntry[] {
@@ -39,7 +48,7 @@ export class ChartComponent implements OnChanges {
 
     lineChart(chartData: EcoChartEntry[]): void {
         // parse the date / time
-        let svg = d3.select("#line-chart"),
+        let svg = d3.select("#linechart"),
             margin = { top: 20, right: 20, bottom: 30, left: 50 },
             width = +svg.attr("width") - margin.left - margin.right,
             height = +svg.attr("height") - margin.top - margin.bottom,

@@ -22,6 +22,7 @@ export class EcoCell {
             .replace(/%3C/g, '<')
             .replace(/%2C/g, ',')
             .replace(/%3A/g, ':')
+            .replace(/%26/g, '&')
             .replace(/%2F/g, '/');
         this.ecoHeaders = ecoHeaders;
     }
